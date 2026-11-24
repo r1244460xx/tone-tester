@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>四選一音高答題遊戲 (C3 ~ C5 男聲領域)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- 頂部導航列 -->
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-icon">🎹</span>
+        <div class="brand-text">
+          <h1>ToneTester</h1>
+          <span class="brand-sub">四選一音高聽音測驗 (C3 ~ C5)</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <span id="current-mode-badge" class="mode-indicator-pill">純自然音 · 寬音距拉開</span>
+        <button id="btn-settings-toggle" class="btn-icon" title="設定" aria-label="設定">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- 1. 歡迎與準備畫面 -->
+    <main id="welcome-screen" class="view-panel">
+      <div class="hero-card">
+        <div class="hero-badge">🎵 男生音高範圍專用</div>
+        <h2 class="hero-title">聽力訓練：精準辨識鋼琴音高</h2>
+        <p class="hero-desc">
+          為您量身打造的聽音挑戰！涵蓋男聲核心音域 <strong>C3 ~ C5</strong>，
+          已為您預設啟用<strong>「純自然音 (無升降)」</strong>與<strong>「寬音距拉開 (新手友善)」</strong>模式，
+          四個選項音高清晰有距，輕鬆打好音感基礎！
+        </p>
+
+        <div class="feature-grid">
+          <div class="feature-item">
+            <span class="feature-icon">✨</span>
+            <div>
+              <strong>已關閉升降半音 (純白鍵)</strong>
+              <p>題目與選項皆僅有自然音 (Do, Re, Mi...)，排除黑鍵干擾。</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🌱</span>
+            <div>
+              <strong>新手寬音距模式</strong>
+              <p>四個選項在 C3~C5 之間均勻拉開 (至少相差 4~7 個半音)，高低音區一清二楚。</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">⏱️</span>
+            <div>
+              <strong>播放 1 秒鋼琴音</strong>
+              <p>播放期間再播鍵鎖定防誤觸，結束後自動解鎖。</p>
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">🎯</span>
+            <div>
+              <strong>清晰對比與自主步調</strong>
+              <p>答題後同時標記「你的選擇」與「正確答案」，不自動跳題，答案揭曉後仍可重複聆聽。</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="welcome-actions">
+          <button id="btn-start" class="btn-primary btn-large">
+            <span>開始測驗 (進入第 1 題)</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+          <button id="btn-test-sound" class="btn-secondary">
+            🔊 測試音量 (中央 C)
+          </button>
+        </div>
+
+        <div class="quick-hints">
+          支援鍵盤快捷鍵：<strong>A / B / C / D</strong> 選項、<strong>R</strong> 再播一次、<strong>Enter</strong> 下一題
+        </div>
+      </div>
+    </main>
+
+    <!-- 2. 遊戲測驗畫面 -->
+    <main id="game-screen" class="view-panel hidden">
+      
+      <!-- 快捷模式切換列 (可隨時調整) -->
+      <section class="quick-toolbar">
+        <button id="toggle-natural-btn" class="btn-toggle-natural active" title="點擊切換純白鍵自然音或含黑鍵全半音階">
+          🎹 範圍：<strong>純白鍵自然音 (無升降 ♯/♭)</strong>
+        </button>
+
+        <div class="quick-mode-wrapper">
+          <label for="quick-mode-select" class="quick-mode-label">難度：</label>
+          <select id="quick-mode-select" class="quick-mode-dropdown">
+            <option value="wide" selected>寬音距拉開 (新手推薦 ⭐)</option>
+            <option value="balanced">智能平衡混淆 (⭐⭐)</option>
+            <option value="tight">微音階極限 (⭐⭐⭐)</option>
+            <option value="harmonic">和聲音程陷阱</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- 統計資訊列 -->
+      <section class="stats-bar">
+        <div class="stat-pill primary">
+          <span class="stat-label">當前進度</span>
+          <span id="stat-question-num" class="stat-value">第 1 題</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">正確率</span>
+          <span id="stat-correct-rate" class="stat-value">0%</span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">成績</span>
+          <span id="stat-score" class="stat-value">0 / 0</span>
+        </div>
+        <div class="stat-pill streak">
+          <span class="stat-label">連勝</span>
+          <span class="streak-wrapper">
+            <span class="streak-icon">🔥</span>
+            <span id="stat-streak" class="stat-value">0</span>
+          </span>
+        </div>
+        <div class="stat-pill">
+          <span class="stat-label">最高連勝</span>
+          <span id="stat-best-streak" class="stat-value">0</span>
+        </div>
+      </section>
+
+      <!-- 核心播放卡片 -->
+      <section class="player-card">
+        <div class="player-header">
+          <div id="play-status-badge" class="status-badge status-playing">
+            🎶 正在播放題目音高...
+          </div>
+          <div class="timbre-badge">🎹 鋼琴 (Piano)</div>
+        </div>
+
+        <!-- 聲波動畫 -->
+        <div class="wave-visualizer" aria-label="音訊聲波視覺反饋">
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+        </div>
+
+        <!-- 1 秒播放進度倒數條 -->
+        <div class="progress-track">
+          <div id="playback-progress" class="progress-bar"></div>
+        </div>
+
+        <!-- 再播一次按鈕 -->
+        <div class="player-actions">
+          <button id="btn-replay" class="btn-replay" disabled>
+            <span class="replay-icon">🔄</span>
+            <span id="replay-text">播放中 (1.0s)...</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 四選一選項網格 -->
+      <section class="options-section">
+        <div class="options-header">
+          <h3>請選擇聽到的音高：</h3>
+          <span class="options-hint">點選卡片或按下鍵盤 A / B / C / D</span>
+        </div>
+
+        <div id="options-container" class="options-grid">
+          <!-- 選項 A -->
+          <button id="option-0" class="option-card" data-index="0">
+            <div class="option-card-inner">
+              <span class="option-slot">A</span>
+              <span class="option-note">--</span>
+              <span class="option-solfege">--</span>
+              <span class="option-badge"></span>
+            </div>
+          </button>
+
+          <!-- 選項 B -->
+          <button id="option-1" class="option-card" data-index="1">
+            <div class="option-card-inner">
+              <span class="option-slot">B</span>
+              <span class="option-note">--</span>
+              <span class="option-solfege">--</span>
+              <span class="option-badge"></span>
+            </div>
+          </button>
+
+          <!-- 選項 C -->
+          <button id="option-2" class="option-card" data-index="2">
+            <div class="option-card-inner">
+              <span class="option-slot">C</span>
+              <span class="option-note">--</span>
+              <span class="option-solfege">--</span>
+              <span class="option-badge"></span>
+            </div>
+          </button>
+
+          <!-- 選項 D -->
+          <button id="option-3" class="option-card" data-index="3">
+            <div class="option-card-inner">
+              <span class="option-slot">D</span>
+              <span class="option-note">--</span>
+              <span class="option-solfege">--</span>
+              <span class="option-badge"></span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- 答題回饋面板與下一題按鈕 -->
+      <section id="feedback-card" class="feedback-card hidden">
+        <div class="feedback-content">
+          <div id="feedback-status" class="feedback-status-row"></div>
+          <div id="feedback-detail" class="feedback-detail-text"></div>
+          <div id="feedback-comparison" class="feedback-comparison-text"></div>
+        </div>
+        <div class="feedback-actions">
+          <button id="btn-next" class="btn-primary btn-next-action">
+            <span>下一題 (Enter)</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 鋼琴鍵盤視覺化 (2 個八度 C3 ~ C5) -->
+      <section class="keyboard-section">
+        <div class="keyboard-header">
+          <h4>🎹 男聲範圍鍵盤位置 (C3 ~ C5)</h4>
+          <span class="keyboard-legend">
+            <span class="legend-dot correct"></span> 正確答案
+            <span class="legend-dot wrong"></span> 你的選擇
+            <span class="legend-tip">（點擊琴鍵可自主試聽發音）</span>
+          </span>
+        </div>
+        <div class="keyboard-wrapper">
+          <div id="piano-keyboard" class="piano-keyboard"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 3. 設定對話框 -->
+    <div id="settings-modal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>⚙️ 測驗設定</h3>
+          <button id="btn-close-settings" class="btn-close">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-group checkbox-group">
+            <label class="checkbox-label" for="chk-natural-only">
+              <input type="checkbox" id="chk-natural-only" class="form-checkbox" checked>
+              <span><strong>關閉升降半音 (純白鍵自然音)</strong></span>
+            </label>
+            <p class="setting-hint">勾選後題目與四個選項皆僅出現 C, D, E, F, G, A, B (無 ♯ 或 ♭)，最適合新手建立基本音高感知。</p>
+          </div>
+
+          <div class="setting-group">
+            <label for="select-distractor">選項混淆難度模式：</label>
+            <select id="select-distractor" class="form-select">
+              <option value="wide" selected>寬音距拉開 (新手推薦 ⭐：各選項間距顯著，易於分辨)</option>
+              <option value="balanced">智能平衡混淆 (⭐⭐：近鄰半音 + 和聲 + 八度)</option>
+              <option value="tight">微音階極限 (⭐⭐⭐：落在 ±1~±4 半音之內)</option>
+              <option value="harmonic">和聲音程陷阱 (三度、四度、五度與八度)</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="select-accidental">升降記號顯示風格：</label>
+            <select id="select-accidental" class="form-select">
+              <option value="combined" selected>升降並列 (例：C♯4 / D♭4)</option>
+              <option value="sharp">僅升記號 (例：C♯4)</option>
+              <option value="flat">僅降記號 (例：D♭4)</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="select-timbre">播放音色：</label>
+            <select id="select-timbre" class="form-select">
+              <option value="piano" selected>平台鋼琴 (Acoustic Grand Piano - 預設)</option>
+              <option value="epiano">復古電鋼琴 (Vintage Rhodes / Bell)</option>
+              <option value="sine">純正弦音 (Pure Sine Wave - 物理頻率)</option>
+            </select>
+          </div>
+
+          <div class="setting-group">
+            <label for="slider-volume">音量調節：</label>
+            <input type="range" id="slider-volume" min="0" max="1" step="0.05" value="0.85" class="form-range">
+          </div>
+
+          <div class="setting-group actions">
+            <button id="btn-reset-stats" class="btn-danger">重置答題統計資料</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript (自包含運行檔案，支援直接雙擊開啟) -->
+  <script src="js/app.js"></script>
+</body>
+</html>
